@@ -1,0 +1,1913 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>金渐层大战</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #1d1510;
+      --paper: #f6e4bd;
+      --cream: #ffd98f;
+      --orange: #e98222;
+      --deep: #592c18;
+      --mint: #7fd2bc;
+      --sky: #6ab6d9;
+      --rose: #d85b68;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background:
+        linear-gradient(0deg, rgba(0, 0, 0, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.07) 1px, transparent 1px),
+        #211710;
+      background-size: 32px 32px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      color: var(--paper);
+    }
+
+    main {
+      width: min(100vw, 980px);
+      height: 100vh;
+      margin: 0 auto;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      padding: 16px;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      min-height: 70px;
+    }
+
+    .player {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .player.right {
+      justify-content: flex-end;
+      text-align: right;
+    }
+
+    .tag {
+      width: 48px;
+      height: 48px;
+      border: 3px solid #16100c;
+      image-rendering: pixelated;
+      background: var(--orange);
+      box-shadow: 0 4px 0 #100b08;
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .tag::before,
+    .tag::after {
+      content: "";
+      position: absolute;
+      top: -12px;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 16px solid var(--orange);
+      filter: drop-shadow(0 -3px 0 #16100c);
+    }
+
+    .tag::before {
+      left: 3px;
+    }
+
+    .tag::after {
+      right: 3px;
+    }
+
+    .tag.long {
+      box-shadow:
+        -6px 0 0 #f1a13a,
+        6px 0 0 #f1a13a,
+        0 4px 0 #100b08;
+    }
+
+    .tag.short {
+      border-radius: 0;
+    }
+
+    .label {
+      min-width: 0;
+    }
+
+    .name {
+      display: block;
+      font-size: clamp(14px, 2vw, 20px);
+      line-height: 1.1;
+      color: #fff0c8;
+      text-shadow: 0 2px 0 #000;
+      white-space: nowrap;
+    }
+
+    .keys {
+      display: block;
+      margin-top: 5px;
+      font-size: 11px;
+      line-height: 1.25;
+      color: #d8b982;
+      white-space: nowrap;
+    }
+
+    .scoreboard {
+      display: grid;
+      place-items: center;
+      min-width: 172px;
+      padding: 8px 14px;
+      border: 4px solid #110b08;
+      background: #3c2416;
+      box-shadow: 0 5px 0 #100b08;
+    }
+
+    .score {
+      color: #ffe4a9;
+      font-size: clamp(24px, 5vw, 40px);
+      line-height: 1;
+      text-shadow: 0 3px 0 #000;
+    }
+
+    .status {
+      margin-top: 5px;
+      min-height: 14px;
+      color: #aee6d7;
+      font-size: 11px;
+      letter-spacing: 0;
+      text-align: center;
+    }
+
+    .arena-wrap {
+      min-height: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .touch-controls {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none;
+    }
+
+    .dpad {
+      display: grid;
+      grid-template-columns: repeat(3, 48px);
+      grid-template-rows: repeat(3, 42px);
+      gap: 5px;
+    }
+
+    .touch-btn {
+      appearance: none;
+      width: 100%;
+      height: 100%;
+      border: 3px solid #100b08;
+      background: #f2a33c;
+      color: #20110b;
+      font: inherit;
+      font-size: 18px;
+      font-weight: 900;
+      padding: 0;
+      box-shadow: 0 4px 0 #100b08;
+      cursor: pointer;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-user-drag: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .touch-btn:active,
+    .touch-btn.is-down {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #100b08;
+      background: #ffd176;
+    }
+
+    .touch-btn.up {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .touch-btn.left {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .touch-btn.right {
+      grid-column: 3;
+      grid-row: 2;
+    }
+
+    .touch-btn.down {
+      grid-column: 2;
+      grid-row: 3;
+    }
+
+    .fire-pad {
+      width: 112px;
+      height: 112px;
+    }
+
+    canvas {
+      display: block;
+      width: min(100%, calc((100vh - 148px) * 1.25));
+      max-height: calc(100vh - 148px);
+      aspect-ratio: 5 / 4;
+      border: 6px solid #120c08;
+      background: #302016;
+      image-rendering: pixelated;
+      box-shadow:
+        0 8px 0 #0d0906,
+        0 18px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    footer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 18px;
+      min-height: 26px;
+      color: #d9bf8d;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .network {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    input {
+      width: 92px;
+      border: 3px solid #100b08;
+      background: #fff0c8;
+      color: #20110b;
+      font: inherit;
+      font-weight: 800;
+      padding: 5px 8px;
+      box-shadow: 0 4px 0 #100b08;
+      text-transform: uppercase;
+      user-select: text;
+      -webkit-user-select: text;
+      -webkit-touch-callout: default;
+    }
+
+    button {
+      appearance: none;
+      border: 3px solid #100b08;
+      background: #f2a33c;
+      color: #20110b;
+      font: inherit;
+      font-weight: 800;
+      padding: 5px 12px;
+      box-shadow: 0 4px 0 #100b08;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #100b08;
+    }
+
+    button.is-active {
+      background: var(--mint);
+      color: #10251f;
+    }
+
+    .shop-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(18, 10, 6, 0.66);
+    }
+
+    .shop-modal.is-open {
+      display: grid;
+    }
+
+    .shop-panel {
+      width: min(720px, 100%);
+      max-height: min(680px, calc(100vh - 36px));
+      overflow: auto;
+      border: 5px solid #100b08;
+      background: #3c2416;
+      box-shadow: 0 8px 0 #100b08;
+      padding: 14px;
+      color: #ffe4a9;
+    }
+
+    .shop-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .shop-title {
+      font-size: 20px;
+      color: #fff0c8;
+      text-shadow: 0 2px 0 #000;
+    }
+
+    .shop-balance {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      color: #d9bf8d;
+    }
+
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .shop-item {
+      border: 4px solid #100b08;
+      background: #2b1d14;
+      padding: 10px;
+      min-height: 170px;
+      display: grid;
+      gap: 8px;
+      justify-items: start;
+      box-shadow: 0 4px 0 #100b08;
+    }
+
+    .shop-icon {
+      width: 64px;
+      height: 48px;
+      border: 3px solid #100b08;
+      background: #6b4328;
+      image-rendering: pixelated;
+      position: relative;
+    }
+
+    .shop-icon.hat::before {
+      content: "";
+      position: absolute;
+      left: 12px;
+      top: 10px;
+      width: 36px;
+      height: 18px;
+      background: #e85d67;
+      box-shadow: 0 -8px 0 #ffb6bf, 0 18px 0 #7a222a;
+    }
+
+    .shop-icon.glasses::before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 18px;
+      width: 14px;
+      height: 12px;
+      background: #11100f;
+      box-shadow: 28px 0 0 #11100f, 14px 4px 0 #11100f;
+    }
+
+    .shop-icon.cannon::before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 18px;
+      width: 42px;
+      height: 12px;
+      background: #7fd2bc;
+      box-shadow: 8px -8px 0 #384541, 24px 12px 0 #ffe8b7;
+    }
+
+    .shop-name {
+      font-size: 15px;
+      color: #fff0c8;
+    }
+
+    .shop-desc,
+    .shop-cost {
+      font-size: 12px;
+      color: #d9bf8d;
+      line-height: 1.35;
+    }
+
+    .shop-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-self: end;
+    }
+
+    @media (max-width: 680px) {
+      main {
+        padding: 10px;
+        gap: 8px;
+      }
+
+      header {
+        grid-template-columns: 1fr;
+        justify-items: stretch;
+        min-height: 0;
+      }
+
+      .scoreboard {
+        order: -1;
+      }
+
+      .player.right {
+        justify-content: flex-start;
+        text-align: left;
+      }
+
+      .tag {
+        width: 38px;
+        height: 38px;
+      }
+
+      canvas {
+        width: min(100%, calc((100vh - 226px) * 1.25));
+        max-height: calc(100vh - 226px);
+        border-width: 4px;
+      }
+
+      .touch-controls {
+        display: flex;
+      }
+
+      footer {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .shop-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main id="app">
+    <header>
+      <section class="player">
+        <span class="tag long" aria-hidden="true"></span>
+        <span class="label">
+          <span class="name">长毛金渐层</span>
+          <span class="keys">WASD 移动 · F 发射</span>
+        </span>
+      </section>
+      <section class="scoreboard" aria-live="polite">
+        <div class="score"><span id="longScore">0</span> : <span id="shortScore">0</span></div>
+        <div class="status" id="status">按任意操作键开始</div>
+      </section>
+      <section class="player right">
+        <span class="label">
+          <span class="name">短毛金渐层</span>
+          <span class="keys" id="shortKeys">方向键移动 · / 发射</span>
+        </span>
+        <span class="tag short" aria-hidden="true"></span>
+      </section>
+    </header>
+
+    <div class="arena-wrap">
+      <canvas id="game" width="800" height="640" aria-label="金渐层大战游戏画布"></canvas>
+    </div>
+
+    <section class="touch-controls" aria-label="手机触屏操作">
+      <div class="dpad">
+        <button class="touch-btn up" type="button" data-touch="up" aria-label="上">▲</button>
+        <button class="touch-btn left" type="button" data-touch="left" aria-label="左">◀</button>
+        <button class="touch-btn right" type="button" data-touch="right" aria-label="右">▶</button>
+        <button class="touch-btn down" type="button" data-touch="down" aria-label="下">▼</button>
+      </div>
+      <button class="touch-btn fire-pad" type="button" data-touch="fire" aria-label="发射">FIRE</button>
+    </section>
+
+    <footer>
+      <span>击中对方得 1 分，猫罐头可让鱼骨双发</span>
+      <span class="network">
+        <input id="room" maxlength="8" value="ORANGE" aria-label="房间号">
+        <button id="online" type="button">联网</button>
+        <span id="netStatus">本地双人</span>
+      </span>
+      <button id="aiToggle" type="button">电脑</button>
+      <button id="shopOpen" type="button">商城</button>
+      <button id="restart" type="button">重新开始</button>
+    </footer>
+  </main>
+
+  <section class="shop-modal" id="shopModal" aria-label="商城" aria-hidden="true">
+    <div class="shop-panel">
+      <div class="shop-head">
+        <div class="shop-title">时装商城</div>
+        <button id="shopClose" type="button">关闭</button>
+      </div>
+      <div class="shop-balance">
+        <span>小鱼干余额：<strong id="coinCount">0</strong></span>
+        <button id="fakeTopUp" type="button">充值 +200</button>
+      </div>
+      <div class="shop-grid" id="shopGrid"></div>
+    </div>
+  </section>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const longScoreEl = document.getElementById("longScore");
+    const shortScoreEl = document.getElementById("shortScore");
+    const statusEl = document.getElementById("status");
+    const restartBtn = document.getElementById("restart");
+    const onlineBtn = document.getElementById("online");
+    const aiToggleBtn = document.getElementById("aiToggle");
+    const roomEl = document.getElementById("room");
+    const netStatusEl = document.getElementById("netStatus");
+    const shortKeysEl = document.getElementById("shortKeys");
+    const appEl = document.getElementById("app");
+    const shopOpenBtn = document.getElementById("shopOpen");
+    const shopCloseBtn = document.getElementById("shopClose");
+    const shopModalEl = document.getElementById("shopModal");
+    const shopGridEl = document.getElementById("shopGrid");
+    const coinCountEl = document.getElementById("coinCount");
+    const fakeTopUpBtn = document.getElementById("fakeTopUp");
+
+    const W = canvas.width;
+    const H = canvas.height;
+    const TILE = 40;
+    const keys = new Set();
+    const controlCodes = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Slash", "KeyW", "KeyA", "KeyS", "KeyD", "KeyF"];
+    const touchInput = { up: false, down: false, left: false, right: false, fire: false };
+    const shopItems = [
+      { id: "hat", name: "可爱小帽子", cost: 80, desc: "给角色戴一顶粉色小帽子。" },
+      { id: "glasses", name: "墨镜", cost: 120, desc: "看起来更冷静，也更会躲攻击。" },
+      { id: "cannon", name: "酷炫炮筒", cost: 160, desc: "把普通炮筒换成青绿色强化外观。" }
+    ];
+    const cosmeticsByCat = {
+      long: { hat: false, glasses: false, cannon: false },
+      short: { hat: false, glasses: false, cannon: false }
+    };
+    const shop = {
+      coins: 120,
+      owned: { hat: false, glasses: false, cannon: false },
+      equipped: { hat: false, glasses: false, cannon: false }
+    };
+    const remoteInputs = {
+      long: { up: false, down: false, left: false, right: false, fire: false },
+      short: { up: false, down: false, left: false, right: false, fire: false }
+    };
+    const network = {
+      active: false,
+      ws: null,
+      role: null,
+      authority: false,
+      room: "",
+      lastInput: "",
+      lastStateAt: 0,
+      manualAt: 0,
+      failed: false
+    };
+    const ai = {
+      active: false,
+      role: "short",
+      input: { up: false, down: false, left: false, right: false, fire: false },
+      path: [],
+      thinkTimer: 0,
+      fireHold: 0,
+      lastGoal: null,
+      strafe: 1,
+      stuckTime: 0,
+      lastX: 714,
+      lastY: 550,
+      intent: "chase",
+      intentTimer: 0,
+      pauseTimer: 0
+    };
+
+    const baseMap = [
+      "####################",
+      "#....b......b......#",
+      "#..##..bbbb..##....#",
+      "#..b.....##.....b..#",
+      "#......b....b......#",
+      "#.###..b....b..###.#",
+      "#......b....b......#",
+      "#..b.....##.....b..#",
+      "#....##..bb..##....#",
+      "#......b......b....#",
+      "#..bbbb..##..bbbb..#",
+      "#..................#",
+      "#....b..####..b....#",
+      "#..##..........##..#",
+      "#......b....b......#",
+      "####################"
+    ];
+
+    const themes = [
+      {
+        name: "棋盘",
+        floorA: "#35251a",
+        floorB: "#2b1d14",
+        speck: "rgba(255, 216, 143, 0.08)",
+        solid: ["#11100f", "#5e6c6a", "#82908b", "#384541"],
+        box: ["#93643c", "#b47b48", "#6f472d", "#40291d"],
+        boxes: [[5,1],[12,1],[7,2],[8,2],[9,2],[10,2],[3,3],[16,3],[7,4],[12,4],[7,5],[12,5],[7,6],[12,6],[3,7],[16,7],[8,8],[9,8],[13,9],[3,10],[4,10],[5,10],[6,10],[13,10],[14,10],[15,10],[16,10],[5,12],[14,12],[7,14],[12,14]]
+      },
+      {
+        name: "冰天雪地",
+        floorA: "#dceef0",
+        floorB: "#b9dbe4",
+        speck: "rgba(255, 255, 255, 0.45)",
+        solid: ["#28404c", "#7ba0ad", "#d9f3f4", "#3f6270"],
+        box: ["#6ea9bf", "#bde8ed", "#477f94", "#2e5f72"],
+        boxes: [[4,1],[15,1],[6,2],[7,2],[12,2],[13,2],[3,4],[4,4],[15,4],[16,4],[9,5],[10,5],[5,7],[14,7],[8,8],[11,8],[2,10],[3,10],[16,10],[17,10],[6,11],[13,11],[4,13],[5,13],[14,13],[15,13],[8,14],[11,14]]
+      },
+      {
+        name: "草地",
+        floorA: "#315b2f",
+        floorB: "#244526",
+        speck: "rgba(201, 236, 132, 0.20)",
+        solid: ["#182816", "#5d7048", "#9da87b", "#334024"],
+        box: ["#7b6437", "#ad9150", "#4f7836", "#3a2b18"],
+        boxes: [[6,1],[13,1],[3,2],[4,2],[15,2],[16,2],[8,3],[11,3],[5,4],[14,4],[7,5],[8,5],[11,5],[12,5],[4,7],[15,7],[9,8],[10,8],[6,9],[13,9],[3,11],[4,11],[15,11],[16,11],[8,12],[11,12],[6,14],[13,14]]
+      },
+      {
+        name: "沙漠",
+        floorA: "#c8944b",
+        floorB: "#b47a37",
+        speck: "rgba(255, 231, 151, 0.22)",
+        solid: ["#3f2b1a", "#8b6a44", "#d2b178", "#5b3e22"],
+        box: ["#a96532", "#d29348", "#7b4625", "#4e2f1e"],
+        boxes: [[5,2],[6,2],[13,2],[14,2],[3,4],[16,4],[8,4],[11,4],[4,6],[5,6],[14,6],[15,6],[7,8],[12,8],[2,9],[17,9],[8,10],[9,10],[10,10],[11,10],[5,12],[14,12],[3,13],[4,13],[15,13],[16,13]]
+      }
+    ];
+
+    let walls = [];
+    let bullets = [];
+    let cans = [];
+    let sparks = [];
+    let canSpawnTimer = 2.5;
+    let lastTime = 0;
+    let roundFreeze = 0;
+    let winnerText = "";
+    let longScore = 0;
+    let shortScore = 0;
+    let themeIndex = 0;
+    let roundId = 0;
+
+    const cats = [
+      {
+        id: "long",
+        name: "长毛金渐层",
+        x: 86,
+        y: 90,
+        spawnX: 86,
+        spawnY: 90,
+        vx: 0,
+        vy: 0,
+        dir: { x: 1, y: 0 },
+        size: 34,
+        speed: 146,
+        cooldown: 0,
+        doubleTime: 0,
+        cosmetics: cosmeticsByCat.long,
+        fluff: true,
+        controls: { up: "KeyW", down: "KeyS", left: "KeyA", right: "KeyD", fire: "KeyF" }
+      },
+      {
+        id: "short",
+        name: "短毛金渐层",
+        x: 714,
+        y: 550,
+        spawnX: 714,
+        spawnY: 550,
+        vx: 0,
+        vy: 0,
+        dir: { x: -1, y: 0 },
+        size: 34,
+        speed: 154,
+        cooldown: 0,
+        doubleTime: 0,
+        cosmetics: cosmeticsByCat.short,
+        fluff: false,
+        controls: { up: "ArrowUp", down: "ArrowDown", left: "ArrowLeft", right: "ArrowRight", fire: "Slash" }
+      }
+    ];
+
+    function resetWalls() {
+      walls = [];
+      baseMap.forEach((row, y) => {
+        [...row].forEach((cell, x) => {
+          if (cell === "#") {
+            walls.push({
+              x: x * TILE,
+              y: y * TILE,
+              w: TILE,
+              h: TILE,
+              breakable: false,
+              hp: Infinity
+            });
+          }
+        });
+      });
+      themes[themeIndex].boxes.forEach(([x, y]) => {
+        walls.push({
+          x: x * TILE,
+          y: y * TILE,
+          w: TILE,
+          h: TILE,
+          breakable: true,
+          hp: 1
+        });
+      });
+    }
+
+    function resetRound(message) {
+      bullets = [];
+      ai.path = [];
+      ai.thinkTimer = 0;
+      ai.stuckTime = 0;
+      ai.intent = "chase";
+      ai.intentTimer = 0;
+      ai.pauseTimer = 0;
+      ai.lastX = cats[1].spawnX;
+      ai.lastY = cats[1].spawnY;
+      cats.forEach((cat) => {
+        cat.x = cat.spawnX;
+        cat.y = cat.spawnY;
+        cat.vx = 0;
+        cat.vy = 0;
+        cat.cooldown = 0;
+        cat.doubleTime = 0;
+        cat.dir = cat.id === "long" ? { x: 1, y: 0 } : { x: -1, y: 0 };
+      });
+      roundFreeze = 1.1;
+      winnerText = `${message || "继续战斗"} · ${themes[themeIndex].name}`;
+      statusEl.textContent = winnerText;
+    }
+
+    function nextTheme() {
+      themeIndex = (themeIndex + 1) % themes.length;
+    }
+
+    function startNextRound(message) {
+      roundId += 1;
+      nextTheme();
+      resetWalls();
+      cans = [];
+      canSpawnTimer = 1.2;
+      resetRound(message);
+      if (network.active && network.authority) {
+        sendNet({ type: "round", roundId, themeIndex, status: winnerText });
+      }
+    }
+
+    function restartGame() {
+      if (network.active && !network.authority) {
+        sendNet({ type: "restart" });
+        statusEl.textContent = "等待长毛金渐层重新开局";
+        return;
+      }
+      longScore = 0;
+      shortScore = 0;
+      themeIndex = 0;
+      longScoreEl.textContent = longScore;
+      shortScoreEl.textContent = shortScore;
+      resetWalls();
+      cans = [];
+      canSpawnTimer = 1.2;
+      resetRound("新的一局");
+    }
+
+    function rectsOverlap(a, b) {
+      return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+    }
+
+    function catRect(cat, x = cat.x, y = cat.y) {
+      return { x: x - cat.size / 2, y: y - cat.size / 2, w: cat.size, h: cat.size };
+    }
+
+    function collides(rect) {
+      return walls.some((wall) => rectsOverlap(rect, wall));
+    }
+
+    function inputFor(cat) {
+      if (network.active && cat.id !== network.role) return remoteInputs[cat.id];
+      if (ai.active && !network.active && cat.id === ai.role) return ai.input;
+      const c = cat.controls;
+      return {
+        up: keys.has(c.up) || touchInput.up,
+        down: keys.has(c.down) || touchInput.down,
+        left: keys.has(c.left) || touchInput.left,
+        right: keys.has(c.right) || touchInput.right,
+        fire: keys.has(c.fire) || touchInput.fire
+      };
+    }
+
+    function setAiMode(active) {
+      if (active && network.active) {
+        statusEl.textContent = "联网时先断开，再开电脑对手";
+        return;
+      }
+      ai.active = active;
+      ai.path = [];
+      ai.thinkTimer = 0;
+      ai.stuckTime = 0;
+      ai.intent = "chase";
+      ai.intentTimer = 0;
+      ai.pauseTimer = 0;
+      ai.input = { up: false, down: false, left: false, right: false, fire: false };
+      aiToggleBtn.classList.toggle("is-active", ai.active);
+      aiToggleBtn.textContent = ai.active ? "电脑中" : "电脑";
+      shortKeysEl.textContent = ai.active ? "电脑控制 · 会躲会追会开火" : "方向键移动 · / 发射";
+      netStatusEl.textContent = ai.active ? "人机对战" : "本地双人";
+      statusEl.textContent = ai.active ? "电脑短毛加入战斗" : "已回到本地双人";
+    }
+
+    function pointBlocked(x, y, padding = 17) {
+      return collides({ x: x - padding, y: y - padding, w: padding * 2, h: padding * 2 });
+    }
+
+    function tileForPoint(x, y) {
+      return {
+        x: clamp(Math.floor(x / TILE), 1, baseMap[0].length - 2),
+        y: clamp(Math.floor(y / TILE), 1, baseMap.length - 2)
+      };
+    }
+
+    function tileCenter(tile) {
+      return { x: tile.x * TILE + TILE / 2, y: tile.y * TILE + TILE / 2 };
+    }
+
+    function tileKey(tile) {
+      return `${tile.x},${tile.y}`;
+    }
+
+    function isOpenTile(tile) {
+      const center = tileCenter(tile);
+      return !pointBlocked(center.x, center.y, 16);
+    }
+
+    function findPath(startPoint, goalPoint) {
+      const start = tileForPoint(startPoint.x, startPoint.y);
+      const goal = tileForPoint(goalPoint.x, goalPoint.y);
+      const queue = [start];
+      const cameFrom = new Map([[tileKey(start), null]]);
+      let best = start;
+      let bestDistance = Math.abs(start.x - goal.x) + Math.abs(start.y - goal.y);
+      const dirs = [
+        { x: 1, y: 0 },
+        { x: -1, y: 0 },
+        { x: 0, y: 1 },
+        { x: 0, y: -1 }
+      ];
+
+      while (queue.length) {
+        const current = queue.shift();
+        if (current.x === goal.x && current.y === goal.y) break;
+        dirs.forEach((dir) => {
+          const next = { x: current.x + dir.x, y: current.y + dir.y };
+          const key = tileKey(next);
+          if (cameFrom.has(key) || !isOpenTile(next)) return;
+          cameFrom.set(key, current);
+          queue.push(next);
+          const distance = Math.abs(next.x - goal.x) + Math.abs(next.y - goal.y);
+          if (distance < bestDistance) {
+            best = next;
+            bestDistance = distance;
+          }
+        });
+      }
+
+      const end = cameFrom.has(tileKey(goal)) ? goal : best;
+      if (!cameFrom.has(tileKey(end))) return [];
+      const path = [];
+      let current = end;
+      while (current) {
+        path.unshift(tileCenter(current));
+        current = cameFrom.get(tileKey(current));
+      }
+      return path.slice(1, 10);
+    }
+
+    function clearShot(from, to) {
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const horizontal = Math.abs(dy) < 24;
+      const vertical = Math.abs(dx) < 24;
+      if (!horizontal && !vertical) return null;
+      const dir = horizontal
+        ? { x: Math.sign(dx), y: 0 }
+        : { x: 0, y: Math.sign(dy) };
+      if (dir.x === 0 && dir.y === 0) return null;
+
+      const distance = Math.hypot(dx, dy);
+      const steps = Math.max(1, Math.floor(distance / 18));
+      for (let i = 1; i < steps; i += 1) {
+        const x = from.x + (dx * i) / steps;
+        const y = from.y + (dy * i) / steps;
+        if (pointBlocked(x, y, 8)) return null;
+      }
+      return dir;
+    }
+
+    function findShootingGoal(cat, target) {
+      const targetTile = tileForPoint(target.x, target.y);
+      const candidates = [];
+      for (let x = 1; x < baseMap[0].length - 1; x += 1) {
+        candidates.push({ x, y: targetTile.y });
+      }
+      for (let y = 1; y < baseMap.length - 1; y += 1) {
+        candidates.push({ x: targetTile.x, y });
+      }
+
+      let best = null;
+      candidates.forEach((tile) => {
+        if (!isOpenTile(tile)) return;
+        const center = tileCenter(tile);
+        if (!clearShot(center, target)) return;
+        const score = Math.hypot(center.x - cat.x, center.y - cat.y) + Math.hypot(center.x - target.x, center.y - target.y) * 0.15;
+        if (!best || score < best.score) best = { ...center, score };
+      });
+      return best || { x: target.x, y: target.y };
+    }
+
+    function tileHasCover(tile, target) {
+      const center = tileCenter(tile);
+      const adjacentWall = [
+        { x: tile.x + 1, y: tile.y },
+        { x: tile.x - 1, y: tile.y },
+        { x: tile.x, y: tile.y + 1 },
+        { x: tile.x, y: tile.y - 1 }
+      ].some((neighbor) => !isOpenTile(neighbor));
+      return adjacentWall && !clearShot(center, target);
+    }
+
+    function findCoverGoal(cat, target) {
+      let best = null;
+      for (let y = 1; y < baseMap.length - 1; y += 1) {
+        for (let x = 1; x < baseMap[y].length - 1; x += 1) {
+          const tile = { x, y };
+          if (!isOpenTile(tile) || !tileHasCover(tile, target)) continue;
+          const center = tileCenter(tile);
+          const fromTarget = Math.hypot(center.x - target.x, center.y - target.y);
+          if (fromTarget < 130 || fromTarget > 390) continue;
+          const fromCat = Math.hypot(center.x - cat.x, center.y - cat.y);
+          const score = fromCat + Math.abs(fromTarget - 240) * 0.7;
+          if (!best || score < best.score) best = { ...center, score };
+        }
+      }
+      return best || findShootingGoal(cat, target);
+    }
+
+    function findFlankGoal(cat, target) {
+      const dx = target.x - cat.x;
+      const dy = target.y - cat.y;
+      const length = Math.hypot(dx, dy) || 1;
+      const side = ai.strafe;
+      const px = (-dy / length) * side;
+      const py = (dx / length) * side;
+      const behindX = target.x - (dx / length) * 70;
+      const behindY = target.y - (dy / length) * 70;
+      const flank = { x: behindX + px * 150, y: behindY + py * 150 };
+      if (!pointBlocked(flank.x, flank.y, 16)) return flank;
+      return findShootingGoal(cat, target);
+    }
+
+    function chooseAIIntent(cat, target) {
+      const distance = Math.hypot(target.x - cat.x, target.y - cat.y);
+      const roll = Math.random();
+      if (distance < 170) return roll < 0.55 ? "hide" : "flank";
+      if (distance < 320) {
+        if (roll < 0.35) return "hide";
+        if (roll < 0.72) return "flank";
+        return "chase";
+      }
+      if (roll < 0.18) return "hide";
+      if (roll < 0.38) return "flank";
+      return "chase";
+    }
+
+    function goalForIntent(cat, target) {
+      if (ai.intent === "hide") return findCoverGoal(cat, target);
+      if (ai.intent === "flank") return findFlankGoal(cat, target);
+      return { x: target.x, y: target.y };
+    }
+
+    function chaseGoal(cat, target) {
+      const directShot = clearShot(cat, target);
+      if (!directShot) return { x: target.x, y: target.y };
+
+      return {
+        x: target.x - directShot.x * 95,
+        y: target.y - directShot.y * 95
+      };
+    }
+
+    function nearestCan(cat) {
+      let best = null;
+      cans.forEach((can) => {
+        const distance = Math.hypot(can.x - cat.x, can.y - cat.y);
+        if (!best || distance < best.distance) best = { ...can, distance };
+      });
+      return best;
+    }
+
+    function dodgeVector(cat) {
+      let dodge = { x: 0, y: 0, danger: 0 };
+      bullets.forEach((bullet) => {
+        if (bullet.owner === cat.id) return;
+        const relX = cat.x - bullet.x;
+        const relY = cat.y - bullet.y;
+        const speed = Math.hypot(bullet.vx, bullet.vy) || 1;
+        const dirX = bullet.vx / speed;
+        const dirY = bullet.vy / speed;
+        const ahead = relX * dirX + relY * dirY;
+        const side = Math.abs(relX * -dirY + relY * dirX);
+        if (ahead < -10 || ahead > 135 || side > 34) return;
+        const sign = (relX * -dirY + relY * dirX) >= 0 ? 1 : -1;
+        dodge.x += -dirY * sign;
+        dodge.y += dirX * sign;
+        dodge.danger += 1;
+      });
+      return dodge;
+    }
+
+    function vectorToInput(dx, dy) {
+      const input = { up: false, down: false, left: false, right: false, fire: false };
+      if (Math.abs(dx) > 8) input[dx > 0 ? "right" : "left"] = true;
+      if (Math.abs(dy) > 8) input[dy > 0 ? "down" : "up"] = true;
+      return input;
+    }
+
+    function axisInput(dx, dy) {
+      const input = { up: false, down: false, left: false, right: false, fire: false };
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        if (Math.abs(dx) > 7) input[dx > 0 ? "right" : "left"] = true;
+        else if (Math.abs(dy) > 7) input[dy > 0 ? "down" : "up"] = true;
+      } else {
+        if (Math.abs(dy) > 7) input[dy > 0 ? "down" : "up"] = true;
+        else if (Math.abs(dx) > 7) input[dx > 0 ? "right" : "left"] = true;
+      }
+      return input;
+    }
+
+    function routeInput(cat, dx, dy) {
+      const preferred = axisInput(dx, dy);
+      const speedStep = 18;
+      const tryMove = (input) => {
+        const moveX = (input.right ? 1 : 0) - (input.left ? 1 : 0);
+        const moveY = (input.down ? 1 : 0) - (input.up ? 1 : 0);
+        if (moveX === 0 && moveY === 0) return false;
+        const length = Math.hypot(moveX, moveY) || 1;
+        const nextX = cat.x + (moveX / length) * speedStep;
+        const nextY = cat.y + (moveY / length) * speedStep;
+        return !collides(catRect(cat, nextX, nextY));
+      };
+
+      if (tryMove(preferred)) return preferred;
+
+      const horizontal = axisInput(dx, 0);
+      const vertical = axisInput(0, dy);
+      const first = Math.abs(dx) >= Math.abs(dy) ? horizontal : vertical;
+      const second = first === horizontal ? vertical : horizontal;
+      if (tryMove(first)) return first;
+      if (tryMove(second)) return second;
+
+      return { up: false, down: false, left: false, right: false, fire: false };
+    }
+
+    function moveAIAlongPath(cat, dt) {
+      while (ai.path.length && Math.hypot(ai.path[0].x - cat.x, ai.path[0].y - cat.y) < 5) {
+        ai.path.shift();
+      }
+      if (ai.path.length === 0) return false;
+
+      const waypoint = ai.path[0];
+      const dx = waypoint.x - cat.x;
+      const dy = waypoint.y - cat.y;
+      const horizontal = Math.abs(dx) >= Math.abs(dy);
+      const moveX = horizontal && Math.abs(dx) > 4 ? Math.sign(dx) : 0;
+      const moveY = !horizontal && Math.abs(dy) > 4 ? Math.sign(dy) : 0;
+      const step = Math.min(cat.speed * dt, Math.max(Math.abs(dx), Math.abs(dy)));
+      const nextX = cat.x + moveX * step;
+      const nextY = cat.y + moveY * step;
+
+      if (moveX !== 0) cat.dir = { x: moveX, y: 0 };
+      if (moveY !== 0) cat.dir = { x: 0, y: moveY };
+
+      cat.x = clamp(nextX, 28, W - 28);
+      cat.y = clamp(nextY, 28, H - 28);
+      return true;
+    }
+
+    function updateAI(dt) {
+      if (!ai.active || network.active) return;
+      const cat = cats.find((item) => item.id === ai.role);
+      const target = cats.find((item) => item.id !== ai.role);
+      if (!cat || !target) return;
+
+      ai.thinkTimer -= dt;
+      ai.intentTimer -= dt;
+      ai.pauseTimer = Math.max(0, ai.pauseTimer - dt);
+      ai.fireHold = Math.max(0, ai.fireHold - dt);
+      const moved = Math.hypot(cat.x - ai.lastX, cat.y - ai.lastY);
+      ai.stuckTime = moved < 0.2 ? ai.stuckTime + dt : 0;
+      ai.lastX = cat.x;
+      ai.lastY = cat.y;
+      const distanceToTargetNow = Math.hypot(target.x - cat.x, target.y - cat.y);
+
+      if (ai.intentTimer <= 0) {
+        ai.intent = chooseAIIntent(cat, target);
+        ai.intentTimer = 1.1 + Math.random() * 1.7;
+        ai.path = [];
+        if (Math.random() < 0.28 || distanceToTargetNow < 180) {
+          ai.pauseTimer = 0.16 + Math.random() * 0.34;
+        }
+        if (Math.random() < 0.45) ai.strafe *= -1;
+      }
+
+      const goal = goalForIntent(cat, target);
+      const goalKey = `${ai.intent}:${Math.round(goal.x / 10)},${Math.round(goal.y / 10)}`;
+
+      if (ai.thinkTimer <= 0 || ai.lastGoal !== goalKey || ai.path.length === 0 || ai.stuckTime > 0.35) {
+        ai.path = findPath(cat, goal);
+        if (ai.path.length === 0) ai.path = findPath(cat, findShootingGoal(cat, target));
+        ai.thinkTimer = ai.intent === "chase" ? 0.38 : 0.55;
+        ai.stuckTime = 0;
+        ai.lastGoal = goalKey;
+      }
+
+      if (ai.pauseTimer <= 0) moveAIAlongPath(cat, dt);
+
+      const shotDir = clearShot(cat, target);
+      if (shotDir) {
+        const distanceToTarget = Math.hypot(target.x - cat.x, target.y - cat.y);
+        cat.dir = shotDir;
+        const fireChance = ai.intent === "hide" ? 0.45 : ai.intent === "flank" ? 0.72 : 0.9;
+        if (distanceToTarget < 460 && cat.cooldown <= 0.05 && ai.fireHold <= 0 && Math.random() < fireChance) {
+          ai.fireHold = 0.24 + Math.random() * 0.34;
+          fire(cat);
+        }
+      }
+    }
+
+    function moveCat(cat, dt, input) {
+      let dx = 0;
+      let dy = 0;
+      if (input.up) dy -= 1;
+      if (input.down) dy += 1;
+      if (input.left) dx -= 1;
+      if (input.right) dx += 1;
+
+      if (dx !== 0 || dy !== 0) {
+        const length = Math.hypot(dx, dy);
+        dx /= length;
+        dy /= length;
+        if (Math.abs(dx) > Math.abs(dy)) {
+          cat.dir = { x: Math.sign(dx), y: 0 };
+        } else {
+          cat.dir = { x: 0, y: Math.sign(dy) };
+        }
+      }
+
+      const nextX = cat.x + dx * cat.speed * dt;
+      if (!collides(catRect(cat, nextX, cat.y))) cat.x = clamp(nextX, 28, W - 28);
+      const nextY = cat.y + dy * cat.speed * dt;
+      if (!collides(catRect(cat, cat.x, nextY))) cat.y = clamp(nextY, 28, H - 28);
+
+      if (input.aimDir) cat.dir = input.aimDir;
+      if (input.fire) fire(cat);
+    }
+
+    function fire(cat) {
+      if (cat.cooldown > 0 || roundFreeze > 0) return;
+      const dir = cat.dir;
+      const doubleShot = cat.doubleTime > 0;
+      const offsets = doubleShot
+        ? [{ x: -dir.y * 8, y: dir.x * 8 }, { x: dir.y * 8, y: -dir.x * 8 }]
+        : [{ x: 0, y: 0 }];
+
+      offsets.forEach((offset) => bullets.push({
+        owner: cat.id,
+        x: cat.x + dir.x * 25 + offset.x,
+        y: cat.y + dir.y * 25 + offset.y,
+        vx: dir.x * 330,
+        vy: dir.y * 330,
+        r: 7,
+        life: 2.1
+      }));
+      cat.cooldown = 0.48;
+    }
+
+    function updateBullets(dt) {
+      bullets.forEach((bullet) => {
+        bullet.x += bullet.vx * dt;
+        bullet.y += bullet.vy * dt;
+        bullet.life -= dt;
+      });
+
+      for (const bullet of bullets) {
+        const bRect = { x: bullet.x - bullet.r, y: bullet.y - bullet.r, w: bullet.r * 2, h: bullet.r * 2 };
+        const wall = walls.find((item) => rectsOverlap(bRect, item));
+        if (wall) {
+          bullet.life = -1;
+          pop(bullet.x, bullet.y, "#ffe2a0");
+          if (wall.breakable) wall.hp -= 1;
+        }
+
+        const target = cats.find((cat) => cat.id !== bullet.owner);
+        if (target && rectsOverlap(bRect, catRect(target))) {
+          bullet.life = -1;
+          if (bullet.owner === "long") {
+            longScore += 1;
+            longScoreEl.textContent = longScore;
+            startNextRound("长毛金渐层得分");
+          } else {
+            shortScore += 1;
+            shortScoreEl.textContent = shortScore;
+            startNextRound("短毛金渐层得分");
+          }
+        }
+      }
+
+      walls = walls.filter((wall) => wall.hp > 0);
+      bullets = bullets.filter((bullet) => bullet.life > 0 && bullet.x > -20 && bullet.x < W + 20 && bullet.y > -20 && bullet.y < H + 20);
+    }
+
+    function updateCans(dt) {
+      canSpawnTimer -= dt;
+      if (canSpawnTimer <= 0) {
+        if (cans.length < 1) spawnCan();
+        canSpawnTimer = 4 + Math.random() * 4;
+      }
+
+      cats.forEach((cat) => {
+        const rect = catRect(cat);
+        cans = cans.filter((can) => {
+          const canRect = { x: can.x - 14, y: can.y - 14, w: 28, h: 28 };
+          if (!rectsOverlap(rect, canRect)) return true;
+          cat.doubleTime = 8;
+          statusEl.textContent = `${cat.name}捡到猫罐头，双发`;
+          pop(can.x, can.y, "#ffd76a");
+          return false;
+        });
+      });
+    }
+
+    function spawnCan() {
+      const open = [];
+      for (let y = 1; y < baseMap.length - 1; y += 1) {
+        for (let x = 1; x < baseMap[y].length - 1; x += 1) {
+          const cx = x * TILE + TILE / 2;
+          const cy = y * TILE + TILE / 2;
+          const rect = { x: cx - 15, y: cy - 15, w: 30, h: 30 };
+          const blockedByWall = collides(rect);
+          const blockedByCat = cats.some((cat) => rectsOverlap(rect, catRect(cat)));
+          const blockedByCan = cans.some((can) => Math.hypot(can.x - cx, can.y - cy) < TILE * 2);
+          const nearSpawn = cats.some((cat) => Math.hypot(cat.spawnX - cx, cat.spawnY - cy) < TILE * 4);
+          if (!blockedByWall && !blockedByCat && !blockedByCan && !nearSpawn) open.push({ x: cx, y: cy });
+        }
+      }
+      if (open.length === 0) return;
+      cans.push(open[Math.floor(Math.random() * open.length)]);
+    }
+
+    function pop(x, y, color) {
+      for (let i = 0; i < 8; i += 1) {
+        sparks.push({
+          x,
+          y,
+          vx: Math.cos((Math.PI * 2 * i) / 8) * (70 + Math.random() * 50),
+          vy: Math.sin((Math.PI * 2 * i) / 8) * (70 + Math.random() * 50),
+          life: 0.35,
+          color
+        });
+      }
+    }
+
+    function updateSparks(dt) {
+      sparks.forEach((spark) => {
+        spark.x += spark.vx * dt;
+        spark.y += spark.vy * dt;
+        spark.life -= dt;
+      });
+      sparks = sparks.filter((spark) => spark.life > 0);
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function drawPixelRect(x, y, w, h, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+    }
+
+    function drawFloor() {
+      const theme = themes[themeIndex];
+      ctx.fillStyle = theme.floorB;
+      ctx.fillRect(0, 0, W, H);
+      for (let y = 0; y < H; y += TILE) {
+        for (let x = 0; x < W; x += TILE) {
+          ctx.fillStyle = ((x / TILE + y / TILE) % 2 === 0) ? theme.floorA : theme.floorB;
+          ctx.fillRect(x, y, TILE, TILE);
+          ctx.fillStyle = theme.speck;
+          ctx.fillRect(x + 3, y + 3, 5, 5);
+          if (theme.name === "冰天雪地") {
+            ctx.fillRect(x + 26, y + 12, 6, 2);
+            ctx.fillRect(x + 28, y + 10, 2, 6);
+          } else if (theme.name === "草地") {
+            ctx.fillRect(x + 27, y + 25, 3, 9);
+            ctx.fillRect(x + 31, y + 22, 3, 12);
+          } else if (theme.name === "沙漠") {
+            ctx.fillRect(x + 22, y + 28, 12, 2);
+            ctx.fillRect(x + 26, y + 31, 9, 2);
+          }
+        }
+      }
+    }
+
+    function drawWalls() {
+      const theme = themes[themeIndex];
+      walls.forEach((wall) => {
+        if (wall.breakable) {
+          drawPixelRect(wall.x + 2, wall.y + 2, TILE - 4, TILE - 4, theme.box[0]);
+          drawPixelRect(wall.x + 7, wall.y + 7, TILE - 14, 8, theme.box[1]);
+          drawPixelRect(wall.x + 8, wall.y + 22, TILE - 16, 7, theme.box[2]);
+          drawPixelRect(wall.x + 2, wall.y + 34, TILE - 4, 4, theme.box[3]);
+        } else {
+          drawPixelRect(wall.x, wall.y, TILE, TILE, theme.solid[0]);
+          drawPixelRect(wall.x + 4, wall.y + 4, TILE - 8, TILE - 8, theme.solid[1]);
+          drawPixelRect(wall.x + 8, wall.y + 8, TILE - 16, 6, theme.solid[2]);
+          drawPixelRect(wall.x + 6, wall.y + 26, TILE - 12, 5, theme.solid[3]);
+        }
+      });
+    }
+
+    function drawCat(cat) {
+      const x = Math.round(cat.x);
+      const y = Math.round(cat.y);
+      const dir = cat.dir;
+      const cosmetics = cat.cosmetics || {};
+      const shadowColor = "rgba(0, 0, 0, 0.28)";
+      drawPixelRect(x - 19, y + 16, 38, 7, shadowColor);
+
+      if (cat.fluff) {
+        drawPixelRect(x - 27, y - 12, 10, 24, "#f3a13d");
+        drawPixelRect(x + 17, y - 12, 10, 24, "#f3a13d");
+        drawPixelRect(x - 21, y - 22, 42, 44, "#e98425");
+        drawPixelRect(x - 25, y - 4, 7, 15, "#ffb24a");
+        drawPixelRect(x + 18, y - 4, 7, 15, "#ffb24a");
+      } else {
+        drawPixelRect(x - 19, y - 19, 38, 38, "#e98425");
+        drawPixelRect(x - 15, y + 12, 30, 8, "#c56419");
+      }
+
+      drawPixelRect(x - 23, y - 28, 13, 14, "#e98425");
+      drawPixelRect(x + 10, y - 28, 13, 14, "#e98425");
+      drawPixelRect(x - 18, y - 24, 8, 8, "#ffcb77");
+      drawPixelRect(x + 10, y - 24, 8, 8, "#ffcb77");
+      drawPixelRect(x - 18, y - 18, 36, 32, "#f1912e");
+      drawPixelRect(x - 12, y - 12, 8, 7, "#1a120e");
+      drawPixelRect(x + 5, y - 12, 8, 7, "#1a120e");
+      if (cosmetics.glasses) {
+        drawPixelRect(x - 15, y - 14, 13, 10, "#070707");
+        drawPixelRect(x + 3, y - 14, 13, 10, "#070707");
+        drawPixelRect(x - 2, y - 10, 5, 3, "#070707");
+        drawPixelRect(x - 12, y - 12, 4, 3, "#5fd0d7");
+        drawPixelRect(x + 6, y - 12, 4, 3, "#5fd0d7");
+      }
+      drawPixelRect(x - 3, y - 3, 6, 5, "#5d281a");
+      drawPixelRect(x - 10, y + 6, 20, 4, "#ffd192");
+
+      const stripe = cat.fluff ? "#c85f1c" : "#bf5819";
+      drawPixelRect(x - 4, y - 20, 8, 8, stripe);
+      drawPixelRect(x - 17, y - 2, 8, 4, stripe);
+      drawPixelRect(x + 9, y - 2, 8, 4, stripe);
+
+      const muzzleX = x + dir.x * 24;
+      const muzzleY = y + dir.y * 24;
+      const horizontal = dir.x !== 0;
+      drawPixelRect(
+        horizontal ? Math.min(x + dir.x * 10, muzzleX) : x - 5,
+        horizontal ? y - 5 : Math.min(y + dir.y * 10, muzzleY),
+        horizontal ? 24 : 10,
+        horizontal ? 10 : 24,
+        cosmetics.cannon ? "#2a8e83" : "#68402b"
+      );
+      if (cosmetics.cannon) {
+        drawPixelRect(
+          horizontal ? Math.min(x + dir.x * 22, muzzleX + dir.x * 4) : x - 7,
+          horizontal ? y - 7 : Math.min(y + dir.y * 22, muzzleY + dir.y * 4),
+          horizontal ? 9 : 14,
+          horizontal ? 14 : 9,
+          "#7fd2bc"
+        );
+      }
+      drawPixelRect(
+        horizontal ? muzzleX - 4 : x - 3,
+        horizontal ? y - 3 : muzzleY - 4,
+        horizontal ? 8 : 6,
+        horizontal ? 6 : 8,
+        "#ffe0a0"
+      );
+
+      if (cat.fluff) {
+        drawPixelRect(x - 29, y + 4, 8, 8, "#f6b24a");
+        drawPixelRect(x + 21, y + 4, 8, 8, "#f6b24a");
+      }
+
+      if (cosmetics.hat) {
+        drawPixelRect(x - 17, y - 35, 34, 6, "#7a222a");
+        drawPixelRect(x - 11, y - 47, 22, 15, "#e85d67");
+        drawPixelRect(x - 7, y - 51, 14, 5, "#ffb6bf");
+        drawPixelRect(x + 8, y - 42, 5, 5, "#ffd76a");
+      }
+
+      if (cat.doubleTime > 0) {
+        drawPixelRect(x - 21, y + 21, 42, 4, "#ffd76a");
+        drawPixelRect(x - 10, y + 26, Math.max(3, (cat.doubleTime / 8) * 20), 4, "#7fd2bc");
+      }
+    }
+
+    function drawBullet(bullet) {
+      drawPixelRect(bullet.x - 9, bullet.y - 2, 18, 4, "#ffe8b7");
+      drawPixelRect(bullet.x - 5, bullet.y - 6, 4, 12, "#ffe8b7");
+      drawPixelRect(bullet.x + 4, bullet.y - 6, 4, 12, "#ffe8b7");
+      drawPixelRect(bullet.x - 2, bullet.y - 2, 4, 4, "#9a6840");
+    }
+
+    function drawCan(can) {
+      const x = Math.round(can.x);
+      const y = Math.round(can.y);
+      drawPixelRect(x - 13, y + 11, 26, 5, "rgba(0, 0, 0, 0.25)");
+      drawPixelRect(x - 12, y - 12, 24, 24, "#c9363e");
+      drawPixelRect(x - 12, y - 15, 24, 6, "#d8e1d6");
+      drawPixelRect(x - 12, y + 9, 24, 6, "#8d2b2d");
+      drawPixelRect(x - 7, y - 5, 14, 9, "#ffd76a");
+      drawPixelRect(x - 4, y - 2, 8, 3, "#6b3a1f");
+      drawPixelRect(x + 7, y - 13, 4, 3, "#ffffff");
+    }
+
+    function drawSparks() {
+      sparks.forEach((spark) => {
+        ctx.globalAlpha = clamp(spark.life / 0.35, 0, 1);
+        drawPixelRect(spark.x - 2, spark.y - 2, 4, 4, spark.color);
+        ctx.globalAlpha = 1;
+      });
+    }
+
+    function drawOverlay() {
+      if (roundFreeze <= 0) return;
+      ctx.fillStyle = "rgba(20, 12, 8, 0.32)";
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#ffe4a9";
+      ctx.textAlign = "center";
+      ctx.font = "28px monospace";
+      ctx.fillText(winnerText || "准备", W / 2, H / 2 - 10);
+      ctx.font = "14px monospace";
+      ctx.fillStyle = "#aee6d7";
+      ctx.fillText("3 秒内先找到角度", W / 2, H / 2 + 22);
+    }
+
+    function update(dt) {
+      if (network.active) {
+        sendLocalInput();
+        if (!network.authority) {
+          updateSparks(dt);
+          return;
+        }
+      }
+
+      cats.forEach((cat) => {
+        cat.cooldown = Math.max(0, cat.cooldown - dt);
+        cat.doubleTime = Math.max(0, cat.doubleTime - dt);
+      });
+
+      if (roundFreeze > 0) {
+        roundFreeze = Math.max(0, roundFreeze - dt);
+        if (roundFreeze === 0) statusEl.textContent = "喵，开火";
+      } else {
+        updateAI(dt);
+        cats.forEach((cat) => {
+          if (ai.active && !network.active && cat.id === ai.role) return;
+          moveCat(cat, dt, inputFor(cat));
+        });
+      }
+
+      updateBullets(dt);
+      updateCans(dt);
+      updateSparks(dt);
+      sendState();
+    }
+
+    function draw() {
+      drawFloor();
+      drawWalls();
+      cans.forEach(drawCan);
+      bullets.forEach(drawBullet);
+      cats.forEach(drawCat);
+      drawSparks();
+      drawOverlay();
+    }
+
+    function frame(now) {
+      const dt = Math.min((now - lastTime) / 1000 || 0, 0.033);
+      lastTime = now;
+      update(dt);
+      draw();
+      requestAnimationFrame(frame);
+    }
+
+    window.addEventListener("keydown", (event) => {
+      if (controlCodes.includes(event.code)) {
+        event.preventDefault();
+        keys.add(event.code);
+      }
+    });
+
+    window.addEventListener("keyup", (event) => {
+      keys.delete(event.code);
+    });
+
+    restartBtn.addEventListener("click", restartGame);
+    onlineBtn.addEventListener("click", activateOnline);
+    aiToggleBtn.addEventListener("click", () => setAiMode(!ai.active));
+    onlineBtn.addEventListener("contextmenu", (event) => event.preventDefault());
+    onlineBtn.addEventListener("selectstart", (event) => event.preventDefault());
+    onlineBtn.addEventListener("dragstart", (event) => event.preventDefault());
+    shopOpenBtn.addEventListener("click", openShop);
+    shopCloseBtn.addEventListener("click", closeShop);
+    fakeTopUpBtn.addEventListener("click", () => {
+      shop.coins += 200;
+      renderShop();
+      statusEl.textContent = "充值成功，到账 200 小鱼干";
+    });
+    shopModalEl.addEventListener("click", (event) => {
+      if (event.target === shopModalEl) closeShop();
+    });
+    appEl.addEventListener("contextmenu", (event) => {
+      if (event.target !== roomEl) event.preventDefault();
+    });
+
+    document.querySelectorAll("[data-touch]").forEach((button) => {
+      const key = button.dataset.touch;
+      button.draggable = false;
+      const setTouch = (value) => {
+        touchInput[key] = value;
+        button.classList.toggle("is-down", value);
+      };
+
+      button.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        button.setPointerCapture(event.pointerId);
+        setTouch(true);
+      });
+
+      button.addEventListener("pointerup", (event) => {
+        event.preventDefault();
+        setTouch(false);
+      });
+
+      button.addEventListener("pointercancel", () => setTouch(false));
+      button.addEventListener("lostpointercapture", () => setTouch(false));
+      button.addEventListener("contextmenu", (event) => event.preventDefault());
+      button.addEventListener("selectstart", (event) => event.preventDefault());
+      button.addEventListener("dragstart", (event) => event.preventDefault());
+      button.addEventListener("touchstart", (event) => event.preventDefault(), { passive: false });
+      button.addEventListener("touchmove", (event) => event.preventDefault(), { passive: false });
+      button.addEventListener("touchend", (event) => event.preventDefault(), { passive: false });
+    });
+
+    function activateOnline(event) {
+      event.preventDefault();
+      const now = performance.now();
+      if (now - network.manualAt < 600) return;
+      network.manualAt = now;
+      connectOnline();
+    }
+
+    function connectOnline() {
+      if (ai.active) setAiMode(false);
+      if (onlineBtn.textContent === "断开" && network.ws && network.ws.readyState === WebSocket.OPEN) {
+        network.ws.close();
+        return;
+      }
+
+      if (network.ws && network.ws.readyState !== WebSocket.CLOSED) {
+        network.ws.close();
+      }
+
+      const room = (roomEl.value || "ORANGE").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8) || "ORANGE";
+      roomEl.value = room;
+      const protocol = location.protocol === "https:" ? "wss:" : "ws:";
+      const host = location.host || "localhost:8765";
+      const ws = new WebSocket(`${protocol}//${host}/ws?room=${encodeURIComponent(room)}`);
+      network.ws = ws;
+      network.room = room;
+      network.failed = false;
+      netStatusEl.textContent = "连接中";
+      onlineBtn.textContent = "断开";
+
+      ws.addEventListener("open", () => {
+        network.active = true;
+        netStatusEl.textContent = `房间 ${room}`;
+      });
+
+      ws.addEventListener("message", (event) => {
+        const message = JSON.parse(event.data);
+        if (message.type === "assign") {
+          network.role = message.role;
+          network.authority = message.role === "long";
+          const name = message.role === "long" ? "长毛金渐层" : "短毛金渐层";
+          statusEl.textContent = `你是${name}`;
+          netStatusEl.textContent = message.ready ? `房间 ${room} 已开战` : `房间 ${room} 等朋友`;
+          applyLocalCosmetics();
+          if (network.authority) {
+            restartGame();
+          }
+        }
+        if (message.type === "ready") {
+          netStatusEl.textContent = `房间 ${room} 已开战`;
+          if (network.authority) resetRound("朋友加入了");
+        }
+        if (message.type === "input" && message.role && message.role !== network.role) {
+          remoteInputs[message.role] = message.input;
+        }
+        if (message.type === "cosmetic" && message.role) {
+          cosmeticsByCat[message.role] = { ...cosmeticsByCat[message.role], ...message.cosmetics };
+          const cat = cats.find((item) => item.id === message.role);
+          if (cat) cat.cosmetics = cosmeticsByCat[message.role];
+        }
+        if (message.type === "state" && !network.authority) {
+          applyState(message.state);
+        }
+        if (message.type === "round" && !network.authority) {
+          applyRound(message);
+        }
+        if (message.type === "restart" && network.authority) {
+          restartGame();
+        }
+        if (message.type === "full") {
+          network.failed = true;
+          statusEl.textContent = "房间满了，换个房间号";
+          netStatusEl.textContent = "连接失败";
+        }
+        if (message.type === "peerLeft") {
+          statusEl.textContent = "朋友离开了，等他重新加入";
+          netStatusEl.textContent = `房间 ${room} 等朋友`;
+        }
+      });
+
+      ws.addEventListener("close", () => {
+        if (network.ws !== ws) return;
+        network.active = false;
+        network.ws = null;
+        network.role = null;
+        network.authority = false;
+        network.lastInput = "";
+        onlineBtn.textContent = "联网";
+        if (!network.failed) {
+          netStatusEl.textContent = "本地双人";
+          statusEl.textContent = "已回到本地双人";
+        }
+      });
+
+      ws.addEventListener("error", () => {
+        if (network.ws !== ws) return;
+        statusEl.textContent = "联网失败，先启动 server.js";
+      });
+    }
+
+    function sendNet(message) {
+      if (network.ws && network.ws.readyState === WebSocket.OPEN) {
+        network.ws.send(JSON.stringify(message));
+      }
+    }
+
+    function openShop() {
+      shopModalEl.classList.add("is-open");
+      shopModalEl.setAttribute("aria-hidden", "false");
+      renderShop();
+    }
+
+    function closeShop() {
+      shopModalEl.classList.remove("is-open");
+      shopModalEl.setAttribute("aria-hidden", "true");
+    }
+
+    function renderShop() {
+      coinCountEl.textContent = shop.coins;
+      shopGridEl.innerHTML = "";
+      shopItems.forEach((item) => {
+        const owned = shop.owned[item.id];
+        const equipped = shop.equipped[item.id];
+        const card = document.createElement("article");
+        card.className = "shop-item";
+        card.innerHTML = `
+          <div class="shop-icon ${item.id}" aria-hidden="true"></div>
+          <div class="shop-name">${item.name}</div>
+          <div class="shop-desc">${item.desc}</div>
+          <div class="shop-cost">${item.cost} 小鱼干</div>
+          <div class="shop-actions">
+            <button type="button" data-buy="${item.id}">${owned ? "已兑换" : "兑换"}</button>
+            <button type="button" data-equip="${item.id}">${equipped ? "已装备" : "装备"}</button>
+          </div>
+        `;
+        shopGridEl.appendChild(card);
+      });
+
+      shopGridEl.querySelectorAll("[data-buy]").forEach((button) => {
+        button.addEventListener("click", () => buyShopItem(button.dataset.buy));
+      });
+      shopGridEl.querySelectorAll("[data-equip]").forEach((button) => {
+        button.addEventListener("click", () => equipShopItem(button.dataset.equip));
+      });
+    }
+
+    function buyShopItem(id) {
+      const item = shopItems.find((entry) => entry.id === id);
+      if (!item || shop.owned[id]) return;
+      if (shop.coins < item.cost) {
+        statusEl.textContent = "小鱼干不够，先充值";
+        return;
+      }
+      shop.coins -= item.cost;
+      shop.owned[id] = true;
+      statusEl.textContent = `已兑换${item.name}`;
+      renderShop();
+    }
+
+    function equipShopItem(id) {
+      if (!shop.owned[id]) {
+        statusEl.textContent = "先兑换，再装备";
+        return;
+      }
+      shop.equipped[id] = !shop.equipped[id];
+      applyLocalCosmetics();
+      renderShop();
+    }
+
+    function localCosmeticRole() {
+      if (network.active && network.role) return network.role;
+      return "long";
+    }
+
+    function applyLocalCosmetics() {
+      const role = localCosmeticRole();
+      cosmeticsByCat[role] = { ...shop.equipped };
+      const cat = cats.find((item) => item.id === role);
+      if (cat) cat.cosmetics = cosmeticsByCat[role];
+      sendNet({ type: "cosmetic", cosmetics: cosmeticsByCat[role] });
+    }
+
+    function sendLocalInput() {
+      if (!network.role) return;
+      const input = inputFor(cats.find((cat) => cat.id === network.role));
+      const packed = JSON.stringify(input);
+      if (packed !== network.lastInput) {
+        network.lastInput = packed;
+        sendNet({ type: "input", input });
+      }
+    }
+
+    function sendState() {
+      if (!network.active || !network.authority) return;
+      const now = performance.now();
+      if (now - network.lastStateAt < 33) return;
+      network.lastStateAt = now;
+      sendNet({ type: "state", state: captureState() });
+    }
+
+    function captureState() {
+      return {
+        cats: cats.map((cat) => ({
+          id: cat.id,
+          x: cat.x,
+          y: cat.y,
+          dir: cat.dir,
+          cooldown: cat.cooldown,
+          doubleTime: cat.doubleTime
+        })),
+        walls,
+        bullets,
+        cans,
+        cosmeticsByCat,
+        canSpawnTimer,
+        longScore,
+        shortScore,
+        themeIndex,
+        roundId,
+        roundFreeze,
+        winnerText,
+        status: statusEl.textContent
+      };
+    }
+
+    function applyState(state) {
+      const incomingTheme = state.themeIndex || 0;
+      const incomingRound = state.roundId || 0;
+      const roundChanged = incomingRound !== roundId || incomingTheme !== themeIndex;
+      themeIndex = incomingTheme;
+      roundId = incomingRound;
+      if (roundChanged) resetWalls();
+
+      state.cats.forEach((remoteCat) => {
+        const cat = cats.find((item) => item.id === remoteCat.id);
+        if (!cat) return;
+        cat.x = remoteCat.x;
+        cat.y = remoteCat.y;
+        cat.dir = remoteCat.dir;
+        cat.cooldown = remoteCat.cooldown;
+        cat.doubleTime = remoteCat.doubleTime || 0;
+      });
+      walls = state.walls || walls;
+      bullets = state.bullets;
+      cans = state.cans || [];
+      if (state.cosmeticsByCat) {
+        Object.assign(cosmeticsByCat.long, state.cosmeticsByCat.long || {});
+        Object.assign(cosmeticsByCat.short, state.cosmeticsByCat.short || {});
+        cats.forEach((cat) => {
+          cat.cosmetics = cosmeticsByCat[cat.id];
+        });
+      }
+      canSpawnTimer = state.canSpawnTimer || 0;
+      longScore = state.longScore;
+      shortScore = state.shortScore;
+      roundFreeze = state.roundFreeze;
+      winnerText = state.winnerText;
+      longScoreEl.textContent = longScore;
+      shortScoreEl.textContent = shortScore;
+      statusEl.textContent = state.status;
+    }
+
+    function applyRound(message) {
+      roundId = message.roundId || roundId + 1;
+      themeIndex = message.themeIndex || 0;
+      bullets = [];
+      cans = [];
+      canSpawnTimer = 1.2;
+      resetWalls();
+      roundFreeze = 1.1;
+      winnerText = message.status || `新的一局 · ${themes[themeIndex].name}`;
+      statusEl.textContent = winnerText;
+      cats.forEach((cat) => {
+        cat.x = cat.spawnX;
+        cat.y = cat.spawnY;
+        cat.cooldown = 0;
+        cat.doubleTime = 0;
+        cat.dir = cat.id === "long" ? { x: 1, y: 0 } : { x: -1, y: 0 };
+      });
+    }
+
+    resetWalls();
+    resetRound("按键开始");
+    applyStartupParams();
+    requestAnimationFrame(frame);
+
+    function applyStartupParams() {
+      const params = new URLSearchParams(location.search);
+      const room = params.get("room");
+      if (room) {
+        roomEl.value = room.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8) || "ORANGE";
+      }
+      if (params.get("online") === "1") {
+        setTimeout(connectOnline, 300);
+      }
+    }
+  </script>
+</body>
+</html>
