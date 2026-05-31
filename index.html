@@ -638,7 +638,16 @@
     </div>
   </section>
 
+  <script src="audioManager.js"></script>
   <script>
+    const audio = window.CatAudio || {
+      unlock() {},
+      play() {},
+      startBgm() {},
+      stopBgm() {},
+      setEnabled() {},
+      setVolume() {}
+    };
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
     const longScoreEl = document.getElementById("longScore");
@@ -917,6 +926,7 @@
     }
 
     function startNextRound(message) {
+      audio.play("success");
       roundId += 1;
       nextTheme();
       resetWalls();
@@ -932,6 +942,7 @@
       if (network.active && !network.authority) {
         sendNet({ type: "restart" });
         statusEl.textContent = "等待长毛金渐层重新开局";
+        audio.play("warning");
         return;
       }
       longScore = 0;
@@ -973,6 +984,7 @@
     function setAiMode(active) {
       if (active && network.active) {
         statusEl.textContent = "联网时先断开，再开电脑对手";
+        audio.play("fail");
         return;
       }
       ai.active = active;
@@ -988,6 +1000,7 @@
       shortKeysEl.textContent = ai.active ? "电脑控制 · 会躲会追会开火" : "方向键移动 · / 发射";
       netStatusEl.textContent = ai.active ? "人机对战" : "本地双人";
       statusEl.textContent = ai.active ? "电脑短毛加入战斗" : "已回到本地双人";
+      audio.play(ai.active ? "open" : "close");
     }
 
     function clearIntroHighlight() {
@@ -1043,6 +1056,8 @@
       clearIntroHighlight();
       introModalEl.classList.remove("is-open");
       introModalEl.setAttribute("aria-hidden", "true");
+      audio.play("open");
+      audio.startBgm();
       if (!network.active) {
         setAiMode(true);
         restartGame();
@@ -1475,6 +1490,7 @@
           if (!rectsOverlap(rect, canRect)) return true;
           cat.doubleTime = 8;
           statusEl.textContent = `${cat.name}捡到猫罐头，双发`;
+          audio.play("success");
           pop(can.x, can.y, "#ffd76a");
           return false;
         });
@@ -1747,6 +1763,8 @@
     }
 
     window.addEventListener("keydown", (event) => {
+      audio.unlock();
+      audio.startBgm();
       if (controlCodes.includes(event.code)) {
         event.preventDefault();
         keys.add(event.code);
@@ -1755,6 +1773,19 @@
 
     window.addEventListener("keyup", (event) => {
       keys.delete(event.code);
+    });
+
+    document.addEventListener("pointerdown", () => {
+      audio.unlock();
+      audio.startBgm();
+    }, { once: true });
+    document.addEventListener("touchstart", () => {
+      audio.unlock();
+      audio.startBgm();
+    }, { once: true, passive: true });
+
+    document.addEventListener("click", (event) => {
+      if (event.target.closest("button")) audio.play("click");
     });
 
     restartBtn.addEventListener("click", restartGame);
@@ -1771,6 +1802,7 @@
       shop.coins += 200;
       renderShop();
       statusEl.textContent = "充值成功，到账 200 小鱼干";
+      audio.play("easterEgg");
     });
     shopModalEl.addEventListener("click", (event) => {
       if (event.target === shopModalEl) closeShop();
@@ -1811,7 +1843,10 @@
     function activateOnline(event) {
       event.preventDefault();
       const now = performance.now();
-      if (now - network.manualAt < 600) return;
+      if (now - network.manualAt < 600) {
+        audio.play("warning");
+        return;
+      }
       network.manualAt = now;
       connectOnline();
     }
@@ -1841,6 +1876,7 @@
       ws.addEventListener("open", () => {
         network.active = true;
         netStatusEl.textContent = `房间 ${room}`;
+        audio.play("success");
       });
 
       ws.addEventListener("message", (event) => {
@@ -1858,6 +1894,7 @@
         }
         if (message.type === "ready") {
           netStatusEl.textContent = `房间 ${room} 已开战`;
+          audio.play("unlock");
           if (network.authority) resetRound("朋友加入了");
         }
         if (message.type === "input" && message.role && message.role !== network.role) {
@@ -1881,10 +1918,12 @@
           network.failed = true;
           statusEl.textContent = "房间满了，换个房间号";
           netStatusEl.textContent = "连接失败";
+          audio.play("fail");
         }
         if (message.type === "peerLeft") {
           statusEl.textContent = "朋友离开了，等他重新加入";
           netStatusEl.textContent = `房间 ${room} 等朋友`;
+          audio.play("warning");
         }
       });
 
@@ -1905,6 +1944,7 @@
       ws.addEventListener("error", () => {
         if (network.ws !== ws) return;
         statusEl.textContent = "联网失败，先启动 server.js";
+        audio.play("fail");
       });
     }
 
@@ -1917,12 +1957,14 @@
     function openShop() {
       shopModalEl.classList.add("is-open");
       shopModalEl.setAttribute("aria-hidden", "false");
+      audio.play("open");
       renderShop();
     }
 
     function closeShop() {
       shopModalEl.classList.remove("is-open");
       shopModalEl.setAttribute("aria-hidden", "true");
+      audio.play("close");
     }
 
     function renderShop() {
@@ -1959,21 +2001,25 @@
       if (!item || shop.owned[id]) return;
       if (shop.coins < item.cost) {
         statusEl.textContent = "小鱼干不够，先充值";
+        audio.play("fail");
         return;
       }
       shop.coins -= item.cost;
       shop.owned[id] = true;
       statusEl.textContent = `已兑换${item.name}`;
+      audio.play("unlock");
       renderShop();
     }
 
     function equipShopItem(id) {
       if (!shop.owned[id]) {
         statusEl.textContent = "先兑换，再装备";
+        audio.play("warning");
         return;
       }
       shop.equipped[id] = !shop.equipped[id];
       applyLocalCosmetics();
+      audio.play("success");
       renderShop();
     }
 
