@@ -74,40 +74,40 @@
 
   const sounds = {
     click() {
-      scheduleTone({ frequency: 720, duration: 0.035, gain: 0.12 });
-      scheduleTone({ frequency: 980, start: 0.035, duration: 0.035, gain: 0.1 });
+      scheduleTone({ frequency: 720, duration: 0.035, gain: 0.095 });
+      scheduleTone({ frequency: 980, start: 0.035, duration: 0.035, gain: 0.08 });
     },
     open() {
       [392, 523, 659].forEach((frequency, index) => {
-        scheduleTone({ frequency, start: index * 0.045, duration: 0.07, gain: 0.13 });
+        scheduleTone({ frequency, start: index * 0.045, duration: 0.07, gain: 0.105 });
       });
     },
     close() {
       [659, 523, 392].forEach((frequency, index) => {
-        scheduleTone({ frequency, start: index * 0.04, duration: 0.06, gain: 0.11 });
+        scheduleTone({ frequency, start: index * 0.04, duration: 0.06, gain: 0.09 });
       });
     },
     success() {
       [523, 659, 784, 1046].forEach((frequency, index) => {
-        scheduleTone({ type: "square", frequency, start: index * 0.055, duration: 0.085, gain: 0.14 });
+        scheduleTone({ type: "square", frequency, start: index * 0.055, duration: 0.085, gain: 0.112 });
       });
     },
     fail() {
-      scheduleTone({ type: "sawtooth", frequency: 220, slideTo: 92, duration: 0.22, gain: 0.13 });
-      scheduleNoise({ start: 0.03, duration: 0.12, gain: 0.07 });
+      scheduleTone({ type: "sawtooth", frequency: 220, slideTo: 92, duration: 0.22, gain: 0.1 });
+      scheduleNoise({ start: 0.03, duration: 0.12, gain: 0.052 });
     },
     unlock() {
       [784, 988, 1175, 1568].forEach((frequency, index) => {
-        scheduleTone({ frequency, start: index * 0.06, duration: 0.12, gain: 0.15 });
+        scheduleTone({ frequency, start: index * 0.06, duration: 0.12, gain: 0.118 });
       });
     },
     warning() {
-      scheduleTone({ type: "triangle", frequency: 330, duration: 0.09, gain: 0.12 });
-      scheduleTone({ type: "triangle", frequency: 330, start: 0.14, duration: 0.09, gain: 0.12 });
+      scheduleTone({ type: "triangle", frequency: 330, duration: 0.09, gain: 0.095 });
+      scheduleTone({ type: "triangle", frequency: 330, start: 0.14, duration: 0.09, gain: 0.095 });
     },
     easterEgg() {
       [523, 659, 784, 659, 1046, 784, 1175].forEach((frequency, index) => {
-        scheduleTone({ type: index % 2 ? "triangle" : "square", frequency, start: index * 0.055, duration: 0.09, gain: 0.12 });
+        scheduleTone({ type: index % 2 ? "triangle" : "square", frequency, start: index * 0.055, duration: 0.09, gain: 0.096 });
       });
     },
     bgm() {
@@ -133,7 +133,7 @@
       frequency: melody,
       start,
       duration: step % 4 === 0 ? 0.13 : 0.09,
-      gain: step % 2 === 0 ? 0.052 : 0.04
+      gain: step % 2 === 0 ? 0.068 : 0.052
     });
 
     if (step % 4 === 0) {
