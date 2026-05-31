@@ -5,6 +5,8 @@
   let ctx = null;
   let master = null;
   let bgmTimer = null;
+  let bgmNextTime = 0;
+  let bgmStep = 0;
   let enabled = true;
   let volume = 0.42;
   let unlocked = false;
@@ -109,14 +111,53 @@
       });
     },
     bgm() {
-      [196, 262, 330, 392].forEach((frequency, index) => {
-        scheduleTone({ type: "triangle", frequency, start: index * 0.16, duration: 0.13, gain: 0.055 });
-      });
-      [523, 494, 392, 330].forEach((frequency, index) => {
-        scheduleTone({ type: "square", frequency, start: 0.64 + index * 0.12, duration: 0.08, gain: 0.035 });
+      [392, 523, 659, 784, 659, 523, 440, 330].forEach((frequency, index) => {
+        scheduleTone({ type: "square", frequency, start: index * 0.105, duration: 0.08, gain: 0.045 });
       });
     }
   };
+
+  const bgmMelody = [
+    392, 523, 659, 523, 440, 587, 698, 587,
+    330, 440, 523, 440, 392, 330, 294, 330
+  ];
+  const bgmBass = [98, 98, 131, 131, 110, 110, 147, 147];
+  const bgmBeat = 0.15;
+
+  function scheduleBgmStep(step, start) {
+    const melody = bgmMelody[step % bgmMelody.length];
+    const bass = bgmBass[Math.floor(step / 4) % bgmBass.length];
+
+    scheduleTone({
+      type: "square",
+      frequency: melody,
+      start,
+      duration: step % 4 === 0 ? 0.13 : 0.09,
+      gain: step % 2 === 0 ? 0.035 : 0.026
+    });
+
+    if (step % 4 === 0) {
+      scheduleTone({ type: "triangle", frequency: bass, start, duration: 0.28, gain: 0.05 });
+    }
+
+    if (step % 8 === 4) {
+      scheduleTone({ type: "triangle", frequency: bass * 1.5, start, duration: 0.16, gain: 0.032 });
+    }
+
+    if (step % 2 === 1) {
+      scheduleNoise({ start, duration: 0.035, gain: 0.018 });
+    }
+  }
+
+  function scheduleBgmLoop() {
+    if (!ctx || !enabled) return;
+    const lookAhead = now() + 0.7;
+    while (bgmNextTime < lookAhead) {
+      scheduleBgmStep(bgmStep, Math.max(0, bgmNextTime - now()));
+      bgmNextTime += bgmBeat;
+      bgmStep = (bgmStep + 1) % 64;
+    }
+  }
 
   function unlock() {
     if (!enabled) return false;
@@ -136,14 +177,18 @@
   function startBgm() {
     if (!enabled || bgmTimer) return;
     if (!unlock()) return;
-    sounds.bgm();
-    bgmTimer = window.setInterval(() => sounds.bgm(), 1280);
+    bgmNextTime = now();
+    bgmStep = 0;
+    scheduleBgmLoop();
+    bgmTimer = window.setInterval(scheduleBgmLoop, 90);
+    document.documentElement.dataset.catAudioBgm = "playing";
   }
 
   function stopBgm() {
     if (!bgmTimer) return;
     window.clearInterval(bgmTimer);
     bgmTimer = null;
+    document.documentElement.dataset.catAudioBgm = "stopped";
   }
 
   function setEnabled(nextEnabled) {
