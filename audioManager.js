@@ -133,19 +133,15 @@
       frequency: melody,
       start,
       duration: step % 4 === 0 ? 0.13 : 0.09,
-      gain: step % 2 === 0 ? 0.035 : 0.026
+      gain: step % 2 === 0 ? 0.052 : 0.04
     });
 
     if (step % 4 === 0) {
-      scheduleTone({ type: "triangle", frequency: bass, start, duration: 0.28, gain: 0.05 });
+      scheduleTone({ type: "triangle", frequency: bass, start, duration: 0.28, gain: 0.045 });
     }
 
     if (step % 8 === 4) {
-      scheduleTone({ type: "triangle", frequency: bass * 1.5, start, duration: 0.16, gain: 0.032 });
-    }
-
-    if (step % 2 === 1) {
-      scheduleNoise({ start, duration: 0.035, gain: 0.018 });
+      scheduleTone({ type: "triangle", frequency: bass * 1.5, start, duration: 0.16, gain: 0.026 });
     }
   }
 
