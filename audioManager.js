@@ -5,6 +5,8 @@
   let ctx = null;
   let master = null;
   let bgmTimer = null;
+  let bgmLoop = null;
+  let bgmTheme = "棋盘";
   let bgmNextTime = 0;
   let bgmStep = 0;
   let enabled = true;
@@ -171,8 +173,10 @@
   }
 
   function startBgm() {
-    if (!enabled || bgmTimer) return;
+    if (!enabled || bgmTimer || bgmLoop) return;
     if (!unlock()) return;
+    const externalLoop = startExternalBgm(bgmTheme);
+    if (externalLoop) return;
     bgmNextTime = now();
     bgmStep = 0;
     scheduleBgmLoop();
@@ -180,11 +184,39 @@
     document.documentElement.dataset.catAudioBgm = "playing";
   }
 
+  function startExternalBgm(themeName) {
+    const bgmFunctions = window.CatBgmFunctions;
+    if (!bgmFunctions || !ctx || !master) return null;
+    const byTheme = {
+      "棋盘": bgmFunctions.playBoardBgm,
+      "冰天雪地": bgmFunctions.playSnowBgm,
+      "草地": bgmFunctions.playGrasslandBgm,
+      "沙漠": bgmFunctions.playDesertBgm
+    };
+    const playTheme = byTheme[themeName] || byTheme["棋盘"];
+    if (typeof playTheme !== "function") return null;
+    bgmLoop = playTheme(ctx, master);
+    document.documentElement.dataset.catAudioBgm = `playing:${themeName}`;
+    return bgmLoop;
+  }
+
   function stopBgm() {
-    if (!bgmTimer) return;
-    window.clearInterval(bgmTimer);
-    bgmTimer = null;
+    if (bgmTimer) {
+      window.clearInterval(bgmTimer);
+      bgmTimer = null;
+    }
+    if (bgmLoop) {
+      bgmLoop.stop();
+      bgmLoop = null;
+    }
     document.documentElement.dataset.catAudioBgm = "stopped";
+  }
+
+  function setBgmTheme(themeName) {
+    bgmTheme = themeName || "棋盘";
+    if (!bgmTimer && !bgmLoop) return;
+    stopBgm();
+    startBgm();
   }
 
   function setEnabled(nextEnabled) {
@@ -202,6 +234,7 @@
     play,
     startBgm,
     stopBgm,
+    setBgmTheme,
     setEnabled,
     setVolume,
     get unlocked() {

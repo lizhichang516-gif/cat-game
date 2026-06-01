@@ -638,6 +638,7 @@
     </div>
   </section>
 
+  <script src="new-bgm-functions.js"></script>
   <script src="audioManager.js"></script>
   <script>
     const audio = window.CatAudio || {
@@ -645,6 +646,7 @@
       play() {},
       startBgm() {},
       stopBgm() {},
+      setBgmTheme() {},
       setEnabled() {},
       setVolume() {}
     };
@@ -919,6 +921,7 @@
       roundFreeze = 1.1;
       winnerText = `${message || "继续战斗"} · ${themes[themeIndex].name}`;
       statusEl.textContent = winnerText;
+      audio.setBgmTheme(themes[themeIndex].name);
     }
 
     function nextTheme() {
@@ -948,6 +951,7 @@
       longScore = 0;
       shortScore = 0;
       themeIndex = 0;
+      audio.setBgmTheme(themes[themeIndex].name);
       longScoreEl.textContent = longScore;
       shortScoreEl.textContent = shortScore;
       resetWalls();
@@ -2086,6 +2090,7 @@
       themeIndex = incomingTheme;
       roundId = incomingRound;
       if (roundChanged) resetWalls();
+      if (roundChanged) audio.setBgmTheme(themes[themeIndex].name);
 
       state.cats.forEach((remoteCat) => {
         const cat = cats.find((item) => item.id === remoteCat.id);
@@ -2119,6 +2124,7 @@
     function applyRound(message) {
       roundId = message.roundId || roundId + 1;
       themeIndex = message.themeIndex || 0;
+      audio.setBgmTheme(themes[themeIndex].name);
       bullets = [];
       cans = [];
       canSpawnTimer = 1.2;
